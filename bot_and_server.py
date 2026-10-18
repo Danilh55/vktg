@@ -18,8 +18,8 @@ from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 import uvicorn
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
-WEBAPP_PUBLIC_URL = os.getenv("WEBAPP_PUBLIC_URL", "https://your-domain.onrender.com")
+BOT_TOKEN = os.getenv("8739621843:AAFXUUFR25QXK9ZNUC_2Wp7Wo326wVqNs40")
+WEBAPP_PUBLIC_URL = os.getenv("https://vktg.onrender.com/")
 PORT = int(os.getenv("PORT", "8000"))
 
 # Официальный User-Agent мобильного клиента Kate Mobile, которому открыт доступ к методам audio.*
