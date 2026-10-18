@@ -93,9 +93,9 @@
         <div class="truncate">
           <div class="flex items-center gap-2">
             <h1 class="font-bold text-base tracking-tight truncate">VK Музыка</h1>
-            <span id="connBadge" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Быстрый режим</span>
+            <span id="connBadge" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-vk-blue/15 text-vk-blue border border-vk-blue/30">VK Direct</span>
           </div>
-          <p id="userStatusSub" class="text-xs text-vk-muted truncate">Telegram Mini App плеер</p>
+          <p id="userStatusSub" class="text-xs text-vk-muted truncate">Войдите в свой аккаунт ВКонтакте</p>
         </div>
       </div>
 
@@ -124,64 +124,92 @@
   <main class="flex-1 max-w-3xl w-full mx-auto px-4 pt-4 pb-36">
 
     <!-- VIEW 1: VK LOGIN SCREEN -->
-    <section id="loginView" class="max-w-md mx-auto my-4 bg-vk-card border border-vk-border rounded-2xl p-6 shadow-xl">
+    <section id="loginView" class="max-w-md mx-auto my-3 bg-vk-card border border-vk-border rounded-2xl p-5 sm:p-6 shadow-xl">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-2xl bg-vk-blue/15 border border-vk-blue/30 flex items-center justify-center text-vk-blue font-bold text-lg">
+        <div class="w-11 h-11 rounded-2xl bg-vk-blue/15 border border-vk-blue/30 flex items-center justify-center text-vk-blue font-bold text-lg shrink-0">
           VK
         </div>
         <div>
-          <h2 class="text-lg font-bold text-white">Вход в аккаунт ВКонтакте</h2>
-          <p class="text-xs text-vk-muted">Для загрузки ваших аудиозаписей и плейлистов</p>
+          <h2 class="text-base sm:text-lg font-bold text-white">Вход в аккаунт ВКонтакте</h2>
+          <p class="text-xs text-vk-muted">Загрузит ваши личные аудиозаписи и плейлисты</p>
         </div>
       </div>
 
       <!-- Auth Method Tabs -->
       <div class="grid grid-cols-2 gap-1 p-1 bg-vk-dark rounded-xl border border-vk-border mb-4">
-        <button id="tabLoginPass" type="button" class="py-1.5 text-xs font-semibold rounded-lg bg-vk-blue text-white transition">
-          Логин и пароль
+        <button id="tabLoginPass" type="button" class="py-2 text-xs font-semibold rounded-lg bg-vk-blue text-white transition">
+          Номер / Почта
         </button>
-        <button id="tabLoginToken" type="button" class="py-1.5 text-xs font-semibold rounded-lg text-vk-muted hover:text-white transition">
-          По токену (VK / Kate)
+        <button id="tabLoginToken" type="button" class="py-2 text-xs font-semibold rounded-lg text-vk-muted hover:text-white transition">
+          По токену (100% вход)
         </button>
+      </div>
+
+      <!-- Error / Status Alert Box -->
+      <div id="loginErrorBox" class="hidden mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-xs text-rose-200 space-y-1">
+        <p id="loginErrorText" class="font-medium"></p>
       </div>
 
       <form id="vkLoginForm" class="space-y-3.5">
         <div id="credentialsBlock" class="space-y-3">
           <div>
-            <label for="vkLoginInput" class="block text-xs font-medium text-slate-300 mb-1">Телефон или Email</label>
-            <input id="vkLoginInput" type="text" placeholder="+7 900 000-00-00" value="+7 999 123-45-67"
+            <label for="vkLoginInput" class="block text-xs font-medium text-slate-300 mb-1">Номер телефона или Email ВК</label>
+            <input id="vkLoginInput" type="text" placeholder="+79001234567 или email@mail.ru" autocomplete="username"
               class="w-full px-3.5 py-2.5 rounded-xl bg-vk-dark border border-vk-border text-sm text-white placeholder-slate-500 focus:outline-none focus:border-vk-blue transition" />
           </div>
           <div>
-            <label for="vkPassInput" class="block text-xs font-medium text-slate-300 mb-1">Пароль</label>
-            <input id="vkPassInput" type="password" placeholder="••••••••" value="vk_demo_pass"
+            <label for="vkPassInput" class="block text-xs font-medium text-slate-300 mb-1">Пароль ВКонтакте</label>
+            <input id="vkPassInput" type="password" placeholder="Введите ваш пароль ВК" autocomplete="current-password"
               class="w-full px-3.5 py-2.5 rounded-xl bg-vk-dark border border-vk-border text-sm text-white placeholder-slate-500 focus:outline-none focus:border-vk-blue transition" />
           </div>
-          <div id="twoFaWrapper" class="hidden">
-            <label for="vk2faInput" class="block text-xs font-medium text-amber-400 mb-1">Код двухфакторной аутентификации (2FA)</label>
-            <input id="vk2faInput" type="text" placeholder="Код из SMS или приложения"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-vk-dark border border-amber-500/50 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition" />
+
+          <!-- 2FA Code Box (shown automatically when VK requests 2FA) -->
+          <div id="twoFaWrapper" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/40 space-y-2">
+            <label for="vk2faInput" class="block text-xs font-semibold text-amber-300">Код подтверждения ВК (2FA / SMS / Push)</label>
+            <input id="vk2faInput" type="text" placeholder="Например: 123456" autocomplete="one-time-code"
+              class="w-full px-3.5 py-2 rounded-xl bg-vk-dark border border-amber-500/50 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition" />
+            <p id="twoFaHint" class="text-[11px] text-amber-200/80">ВКонтакте отправил код в уведомление ВК или по SMS. Введите его и нажмите «Войти» ещё раз.</p>
+          </div>
+
+          <!-- Captcha Box (shown automatically if VK requests captcha) -->
+          <div id="captchaWrapper" class="hidden p-3 rounded-xl bg-vk-dark border border-vk-border space-y-2">
+            <label for="vkCaptchaInput" class="block text-xs font-medium text-slate-300">Введите код с картинки (защита ВК):</label>
+            <img id="captchaImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Captcha" class="h-12 rounded-lg border border-vk-border bg-white p-0.5" />
+            <input id="vkCaptchaInput" type="text" placeholder="Код с картинки"
+              class="w-full px-3.5 py-2 rounded-xl bg-vk-card border border-vk-border text-sm text-white placeholder-slate-500 focus:outline-none focus:border-vk-blue transition" />
           </div>
         </div>
 
-        <div id="tokenBlock" class="hidden space-y-2">
-          <label for="vkTokenInput" class="block text-xs font-medium text-slate-300 mb-1">Access Token (Kate Mobile / VK Admin)</label>
-          <input id="vkTokenInput" type="text" placeholder="vk1.a.xxxx..."
-            class="w-full px-3.5 py-2.5 rounded-xl bg-vk-dark border border-vk-border text-sm text-white placeholder-slate-500 focus:outline-none focus:border-vk-blue transition" />
-          <p class="text-[11px] text-vk-muted leading-relaxed">
-            Токен сохраняется локально и используется сервером бота для прямого доступа к методам <code class="text-slate-300">audio.get</code> и <code class="text-slate-300">audio.search</code>.
-          </p>
+        <div id="tokenBlock" class="hidden space-y-3">
+          <div class="p-3 rounded-xl bg-vk-blue/10 border border-vk-blue/30 text-xs text-slate-200 space-y-2">
+            <p class="font-semibold text-white">Как получить токен за 5 секунд (рекомендуется для облака Render):</p>
+            <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-300">
+              <li>Нажмите кнопку <b>«Открыть страницу токена ВК»</b> ниже и разрешите доступ.</li>
+              <li>Откроется пустая вкладка со словом <i>Пожалуйста, не копируйте...</i> — <b>скопируйте всю ссылку из адресной строки браузера</b>.</li>
+              <li>Вставьте скопированную ссылку или токен в поле ниже:</li>
+            </ol>
+            <a id="linkGetVkToken" href="https://oauth.vk.com/authorize?client_id=2685278&scope=1073741824,65536&redirect_uri=https://oauth.vk.com/blank.html&display=mobile&response_type=token&v=5.131&revoke=1" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center justify-center w-full py-2 px-3 rounded-lg bg-vk-blue/25 hover:bg-vk-blue/40 border border-vk-blue/50 text-vk-blue font-semibold text-xs transition">
+              🔗 Открыть страницу токена ВК (Kate Mobile)
+            </a>
+          </div>
+
+          <div>
+            <label for="vkTokenInput" class="block text-xs font-medium text-slate-300 mb-1">Токен или полная ссылка из адресной строки</label>
+            <input id="vkTokenInput" type="text" placeholder="https://oauth.vk.com/blank.html#access_token=vk1.a..."
+              class="w-full px-3.5 py-2.5 rounded-xl bg-vk-dark border border-vk-border text-sm text-white placeholder-slate-500 focus:outline-none focus:border-vk-blue transition" />
+          </div>
         </div>
 
         <button id="btnSubmitLogin" type="submit" class="w-full py-2.5 px-4 rounded-xl bg-vk-blue hover:bg-vk-hover active:scale-[0.99] text-white font-semibold text-sm shadow-lg shadow-vk-blue/25 transition flex items-center justify-center gap-2">
-          <span>Войти и загрузить мою музыку</span>
+          <span id="btnSubmitText">Войти и загрузить мои песни ВК</span>
         </button>
       </form>
 
       <div class="mt-4 pt-4 border-t border-vk-border flex items-center justify-between text-xs text-vk-muted">
-        <span>Кэширование потоков включено</span>
-        <button id="btnQuickDemo" type="button" class="text-vk-blue hover:underline font-medium">
-          Быстрый вход (Демо-аккаунт)
+        <span>Прямой поток ВК (MP3)</span>
+        <button id="btnQuickDemo" type="button" class="text-slate-400 hover:text-white underline">
+          Тестовый демо-режим
         </button>
       </div>
     </section>
@@ -191,28 +219,33 @@
 
       <!-- User Profile Banner + Search & Filter Bar -->
       <div class="bg-vk-card border border-vk-border rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div id="userAvatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-vk-blue to-cyan-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
-            АК
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="userAvatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-vk-blue to-cyan-400 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+            ВК
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span id="userNameDisplay" class="font-semibold text-sm text-white truncate">Алексей Ковалёв</span>
-              <span class="text-[11px] px-2 py-0.5 rounded-md bg-vk-blue/15 text-vk-blue font-medium">VK ID подключён</span>
+              <span id="userNameDisplay" class="font-semibold text-sm text-white truncate">Мой профиль ВК</span>
+              <span id="accountModePill" class="text-[11px] px-2 py-0.5 rounded-md bg-vk-blue/15 text-vk-blue font-medium shrink-0">VK ID</span>
             </div>
-            <p class="text-xs text-vk-muted"><span id="tracksCountBadge">8</span> аудиозаписей в библиотеке</p>
+            <p class="text-xs text-vk-muted"><span id="tracksCountBadge">0</span> аудиозаписей доступно</p>
           </div>
         </div>
 
-        <!-- Search Input -->
-        <div class="relative flex-1 max-w-xs">
-          <svg class="w-4 h-4 text-vk-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path stroke-linecap="round" d="M21 21l-4.35-4.35"></path>
-          </svg>
-          <input id="searchInput" type="text" placeholder="Поиск по моей музыке ВК..."
-            class="w-full pl-9 pr-8 py-2 rounded-xl bg-vk-dark border border-vk-border text-xs text-white placeholder-vk-muted focus:outline-none focus:border-vk-blue transition" />
-          <button id="btnClearSearch" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-vk-muted hover:text-white text-xs">✕</button>
+        <!-- Search Input (Local + Global VK Search) -->
+        <div class="flex items-center gap-1.5 flex-1 max-w-sm">
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 text-vk-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path stroke-linecap="round" d="M21 21l-4.35-4.35"></path>
+            </svg>
+            <input id="searchInput" type="text" placeholder="Поиск по песням ВК..."
+              class="w-full pl-9 pr-7 py-2 rounded-xl bg-vk-dark border border-vk-border text-xs text-white placeholder-vk-muted focus:outline-none focus:border-vk-blue transition" />
+            <button id="btnClearSearch" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-vk-muted hover:text-white text-xs">✕</button>
+          </div>
+          <button id="btnSearchVkGlobal" type="button" class="px-3 py-2 rounded-xl bg-vk-blue/20 hover:bg-vk-blue/30 border border-vk-blue/40 text-vk-blue text-xs font-semibold shrink-0 transition" title="Искать по всей базе ВКонтакте">
+            Найти в ВК
+          </button>
         </div>
       </div>
 
@@ -220,19 +253,19 @@
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-1.5">
           <button id="filterAll" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-vk-blue text-white transition">
-            Моя музыка
+            Мои аудиозаписи
           </button>
           <button id="filterLiked" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-vk-card text-vk-muted hover:text-white border border-vk-border transition">
-            Избранное ♥
+            Отмеченные ♥
           </button>
-          <button id="filterCached" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-vk-card text-vk-muted hover:text-white border border-vk-border transition">
-            В кэше ⚡
+          <button id="btnReloadMyTracks" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-vk-card text-slate-300 hover:text-white border border-vk-border transition" title="Заново загрузить список моих песен из ВК">
+            ↻ Обновить из ВК
           </button>
         </div>
 
         <div class="flex items-center gap-2 text-[11px] text-vk-muted">
           <span>Пауза: <kbd id="hintKeyPlay" class="px-1.5 py-0.5 rounded bg-vk-card border border-vk-border text-slate-300 font-mono">Space</kbd></span>
-          <span>След: <kbd id="hintKeyNext" class="px-1.5 py-0.5 rounded bg-vk-card border border-vk-border text-slate-300 font-mono">Alt+Right</kbd></span>
+          <span>След: <kbd id="hintKeyNext" class="px-1.5 py-0.5 rounded bg-vk-card border border-vk-border text-slate-300 font-mono">Alt+ArrowRight</kbd></span>
         </div>
       </div>
 
@@ -258,12 +291,12 @@
       <div class="flex items-center justify-between gap-3">
         <!-- Current Track Meta -->
         <div class="flex items-center gap-3 min-w-0 flex-1">
-          <div id="dockCover" class="w-11 h-11 rounded-xl bg-gradient-to-br from-vk-blue to-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-md">
+          <div id="dockCover" class="w-11 h-11 rounded-xl bg-gradient-to-br from-vk-blue to-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-md overflow-hidden">
             VK
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
-              <p id="dockTitle" class="font-semibold text-sm text-white truncate">Выберите трек</p>
+              <p id="dockTitle" class="font-semibold text-sm text-white truncate">Выберите песню</p>
               <button id="btnDockLike" type="button" class="text-vk-muted hover:text-rose-400 transition text-sm shrink-0" title="Добавить в избранное">♥</button>
             </div>
             <p id="dockArtist" class="text-xs text-vk-muted truncate">Аудиозаписи ВКонтакте</p>
@@ -346,7 +379,7 @@
           <span class="text-emerald-400 font-medium">Активны в фоне</span>
         </div>
         <p class="text-[11px] text-vk-muted">
-          Аппаратные кнопки <kbd class="px-1 py-0.5 bg-vk-card rounded">Play/Pause</kbd>, <kbd class="px-1 py-0.5 bg-vk-card rounded">Next</kbd>, <kbd class="px-1 py-0.5 bg-vk-card rounded">Prev</kbd> и гарнитура работают даже когда Telegram свёрнут. Для пользовательских комбинаций вне окна браузера запустите <code class="text-slate-200">desktop_hotkeys.py</code> из архива проекта.
+          Аппаратные кнопки <kbd class="px-1 py-0.5 bg-vk-card rounded">Play/Pause</kbd>, <kbd class="px-1 py-0.5 bg-vk-card rounded">Next</kbd>, <kbd class="px-1 py-0.5 bg-vk-card rounded">Prev</kbd> и гарнитура работают даже когда Telegram свёрнут. Для пользовательских комбинаций вне окна браузера запустите <code class="text-slate-200">desktop_hotkeys.py</code>.
         </p>
       </div>
 
@@ -373,7 +406,6 @@
 
   <script>
     (function () {
-      // Initialize Telegram WebApp SDK if running inside Telegram
       if (window.Telegram && window.Telegram.WebApp) {
         try {
           window.Telegram.WebApp.ready();
@@ -381,7 +413,6 @@
         } catch (e) {}
       }
 
-      // Safe localStorage wrapper
       function loadStorage(key, fallback) {
         try {
           const raw = localStorage.getItem(key);
@@ -396,12 +427,12 @@
         } catch (e) {}
       }
 
-      // Default VK Tracks with WebAudio synthesis parameters for instant zero-latency playback in Canvas
-      const DEFAULT_TRACKS = [
+      // Demo tracks used ONLY if running in standalone preview without backend or clicking "Тестовый демо-режим"
+      const DEMO_TRACKS = [
         {
-          id: 'vk_101',
+          id: 'demo_1',
           artist: 'Miyagi & Эндшпиль',
-          title: 'Silhouette (VK Audio HQ)',
+          title: 'Silhouette (Демо-режим)',
           duration: 194,
           liked: true,
           cached: true,
@@ -411,9 +442,9 @@
           scale: [0, 3, 5, 7, 10]
         },
         {
-          id: 'vk_102',
+          id: 'demo_2',
           artist: 'Кино',
-          title: 'Спокойная ночь (Remastered)',
+          title: 'Спокойная ночь (Демо-режим)',
           duration: 362,
           liked: true,
           cached: true,
@@ -423,9 +454,9 @@
           scale: [0, 2, 3, 7, 8]
         },
         {
-          id: 'vk_103',
+          id: 'demo_3',
           artist: 'Три дня дождя',
-          title: 'Отпускай',
+          title: 'Отпускай (Демо-режим)',
           duration: 215,
           liked: false,
           cached: true,
@@ -433,66 +464,6 @@
           bpm: 124,
           rootFreq: 246.94,
           scale: [0, 2, 3, 5, 7]
-        },
-        {
-          id: 'vk_104',
-          artist: 'MACAN',
-          title: 'ASPHALT 8',
-          duration: 178,
-          liked: false,
-          cached: true,
-          coverGradient: 'from-emerald-600 to-teal-900',
-          bpm: 130,
-          rootFreq: 164.81,
-          scale: [0, 3, 5, 7, 10]
-        },
-        {
-          id: 'vk_105',
-          artist: 'Баста',
-          title: 'На заре (VK Mix)',
-          duration: 248,
-          liked: true,
-          cached: true,
-          coverGradient: 'from-amber-500 to-orange-800',
-          bpm: 100,
-          rootFreq: 261.63,
-          scale: [0, 2, 4, 7, 9]
-        },
-        {
-          id: 'vk_106',
-          artist: 'Zivert',
-          title: 'Wake Up!',
-          duration: 204,
-          liked: false,
-          cached: false,
-          coverGradient: 'from-fuchsia-600 to-pink-900',
-          bpm: 118,
-          rootFreq: 293.66,
-          scale: [0, 3, 5, 7, 10]
-        },
-        {
-          id: 'vk_107',
-          artist: 'Скриптонит',
-          title: 'Это любовь',
-          duration: 268,
-          liked: true,
-          cached: true,
-          coverGradient: 'from-cyan-600 to-blue-900',
-          bpm: 88,
-          rootFreq: 174.61,
-          scale: [0, 2, 3, 7, 8]
-        },
-        {
-          id: 'vk_108',
-          artist: 'MORGENSHTERN / Arut',
-          title: 'BUGATTI',
-          duration: 162,
-          liked: false,
-          cached: false,
-          coverGradient: 'from-violet-600 to-indigo-950',
-          bpm: 140,
-          rootFreq: 146.83,
-          scale: [0, 1, 5, 7, 8]
         }
       ];
 
@@ -508,12 +479,17 @@
         toggleLike: { label: 'Добавить в избранное ♥', combo: 'KeyL' }
       };
 
-      // Application State
+      const savedToken = loadStorage('vk_real_token', '');
+      const savedRealTracks = loadStorage('vk_real_tracks', []);
+
       let state = {
-        loggedIn: loadStorage('vk_logged_in', true),
+        loggedIn: Boolean(savedToken && savedRealTracks.length > 0),
+        isDemo: false,
         authMode: 'pass',
-        userName: loadStorage('vk_user_name', 'Алексей Ковалёв'),
-        tracks: loadStorage('vk_tracks', DEFAULT_TRACKS),
+        vkToken: savedToken,
+        userName: loadStorage('vk_real_user_name', ''),
+        userPhoto: loadStorage('vk_real_user_photo', ''),
+        tracks: savedRealTracks,
         filter: 'all',
         searchQuery: '',
         currentIndex: 0,
@@ -523,6 +499,8 @@
         muted: false,
         shuffle: false,
         repeat: false,
+        captchaSid: '',
+        validationSid: '',
         hotkeys: loadStorage('vk_hotkeys', JSON.parse(JSON.stringify(DEFAULT_HOTKEYS))),
         recordingAction: null
       };
@@ -534,8 +512,10 @@
       const userStatusSub = document.getElementById('userStatusSub');
       const userNameDisplay = document.getElementById('userNameDisplay');
       const userAvatar = document.getElementById('userAvatar');
+      const accountModePill = document.getElementById('accountModePill');
       const tracksCountBadge = document.getElementById('tracksCountBadge');
       const trackListContainer = document.getElementById('trackListContainer');
+      const connBadge = document.getElementById('connBadge');
 
       const tabLoginPass = document.getElementById('tabLoginPass');
       const tabLoginToken = document.getElementById('tabLoginToken');
@@ -543,15 +523,27 @@
       const tokenBlock = document.getElementById('tokenBlock');
       const vkLoginForm = document.getElementById('vkLoginForm');
       const vkLoginInput = document.getElementById('vkLoginInput');
+      const vkPassInput = document.getElementById('vkPassInput');
+      const vk2faInput = document.getElementById('vk2faInput');
+      const twoFaWrapper = document.getElementById('twoFaWrapper');
+      const twoFaHint = document.getElementById('twoFaHint');
+      const captchaWrapper = document.getElementById('captchaWrapper');
+      const captchaImg = document.getElementById('captchaImg');
+      const vkCaptchaInput = document.getElementById('vkCaptchaInput');
       const vkTokenInput = document.getElementById('vkTokenInput');
+      const loginErrorBox = document.getElementById('loginErrorBox');
+      const loginErrorText = document.getElementById('loginErrorText');
+      const btnSubmitLogin = document.getElementById('btnSubmitLogin');
+      const btnSubmitText = document.getElementById('btnSubmitText');
       const btnQuickDemo = document.getElementById('btnQuickDemo');
       const btnAccountToggle = document.getElementById('btnAccountToggle');
 
       const searchInput = document.getElementById('searchInput');
       const btnClearSearch = document.getElementById('btnClearSearch');
+      const btnSearchVkGlobal = document.getElementById('btnSearchVkGlobal');
       const filterAll = document.getElementById('filterAll');
       const filterLiked = document.getElementById('filterLiked');
-      const filterCached = document.getElementById('filterCached');
+      const btnReloadMyTracks = document.getElementById('btnReloadMyTracks');
 
       const seekSlider = document.getElementById('seekSlider');
       const currentTimeLabel = document.getElementById('currentTimeLabel');
@@ -591,10 +583,18 @@
         if (toastTimer) clearTimeout(toastTimer);
         toastTimer = setTimeout(() => {
           toastBox.classList.add('hidden');
-        }, 2200);
+        }, 2500);
       }
 
-      // Format seconds to M:SS
+      function showLoginError(msg) {
+        if (!msg) {
+          loginErrorBox.classList.add('hidden');
+          return;
+        }
+        loginErrorText.textContent = msg;
+        loginErrorBox.classList.remove('hidden');
+      }
+
       function formatTime(sec) {
         const s = Math.max(0, Math.floor(sec || 0));
         const m = Math.floor(s / 60);
@@ -602,14 +602,52 @@
         return m + ':' + (rem < 10 ? '0' : '') + rem;
       }
 
-      // Web Audio API Synthesizer & Real Stream Engine
+      // Extract access_token if user pasted full URL like https://oauth.vk.com/blank.html#access_token=vk1.a...&expires_in=0
+      function extractVkToken(raw) {
+        const str = (raw || '').trim();
+        if (!str) return '';
+        const match = str.match(/access_token=([^&\s#]+)/i);
+        if (match && match[1]) return match[1];
+        return str;
+      }
+
+      // Audio Engines: Real HTML5 Audio for VK MP3 streams + WebAudio synth for Demo
       let audioCtx = null;
       let gainNode = null;
       let synthInterval = null;
       let progressInterval = null;
       let stepCounter = 0;
-      let htmlAudio = new Audio();
+      let activeTrackIdLoaded = null;
+
+      const htmlAudio = new Audio();
       htmlAudio.preload = 'auto';
+      htmlAudio.crossOrigin = 'anonymous';
+
+      htmlAudio.addEventListener('timeupdate', () => {
+        const track = state.tracks[state.currentIndex];
+        if (!track || !track.streamUrl) return;
+        state.currentTime = htmlAudio.currentTime || 0;
+        if (htmlAudio.duration && isFinite(htmlAudio.duration) && htmlAudio.duration > 0) {
+          track.duration = Math.round(htmlAudio.duration);
+        }
+        updateDockProgress();
+      });
+
+      htmlAudio.addEventListener('ended', () => {
+        if (state.repeat) {
+          htmlAudio.currentTime = 0;
+          htmlAudio.play().catch(() => {});
+        } else {
+          nextTrack();
+        }
+      });
+
+      htmlAudio.addEventListener('error', () => {
+        const track = state.tracks[state.currentIndex];
+        if (track && track.streamUrl) {
+          showToast('Не удалось воспроизвести трек (возможно, ограничение региона ВК)');
+        }
+      });
 
       function ensureAudioContext() {
         if (!audioCtx) {
@@ -634,7 +672,6 @@
         const octave = (stepCounter % 8 === 0) ? 0.5 : 1;
         const freq = (track.rootFreq || 220) * octave * Math.pow(2, noteOffset / 12);
 
-        // Lead/pad tone
         const osc = audioCtx.createOscillator();
         const noteGain = audioCtx.createGain();
         osc.type = (stepCounter % 4 === 0) ? 'triangle' : 'sine';
@@ -648,25 +685,10 @@
         noteGain.connect(gainNode);
         osc.start(now);
         osc.stop(now + 0.4);
-
-        // Warm sub-bass on beat
-        if (stepCounter % 4 === 0) {
-          const bassOsc = audioCtx.createOscillator();
-          const bassGain = audioCtx.createGain();
-          bassOsc.type = 'sine';
-          bassOsc.frequency.setValueAtTime((track.rootFreq || 220) * 0.5, now);
-          bassGain.gain.setValueAtTime(0.001, now);
-          bassGain.gain.exponentialRampToValueAtTime(0.24, now + 0.02);
-          bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-          bassOsc.connect(bassGain);
-          bassGain.connect(gainNode);
-          bassOsc.start(now);
-          bassOsc.stop(now + 0.46);
-        }
         stepCounter++;
       }
 
-      function stopAudioEngine() {
+      function stopAudioEngine(resetRealSrc) {
         if (synthInterval) {
           clearInterval(synthInterval);
           synthInterval = null;
@@ -677,59 +699,71 @@
         }
         try {
           htmlAudio.pause();
+          if (resetRealSrc) {
+            activeTrackIdLoaded = null;
+          }
         } catch (e) {}
       }
 
       function startAudioEngine() {
-        stopAudioEngine();
+        stopAudioEngine(false);
         const track = state.tracks[state.currentIndex];
         if (!track) return;
 
-        // If backend provided a direct stream URL, use HTML5 Audio
+        // Real VK Audio Stream
         if (track.streamUrl) {
-          htmlAudio.src = track.streamUrl;
-          htmlAudio.currentTime = state.currentTime;
+          if (activeTrackIdLoaded !== track.id) {
+            htmlAudio.src = track.streamUrl;
+            activeTrackIdLoaded = track.id;
+            htmlAudio.currentTime = state.currentTime || 0;
+          }
           htmlAudio.volume = state.muted ? 0 : state.volume;
-          htmlAudio.play().catch(() => {});
+          htmlAudio.play().catch((err) => {
+            console.warn('Audio play blocked or failed:', err);
+          });
         } else {
+          // Demo WebAudio Synth fallback
           ensureAudioContext();
           const stepMs = Math.round((60 / (track.bpm || 110)) * 500);
           playSynthStep(track);
           synthInterval = setInterval(() => {
             if (state.isPlaying) playSynthStep(track);
           }, stepMs);
-        }
 
-        progressInterval = setInterval(() => {
-          if (!state.isPlaying) return;
-          const activeTrack = state.tracks[state.currentIndex];
-          if (!activeTrack) return;
-          state.currentTime += 0.25;
-          if (state.currentTime >= activeTrack.duration) {
-            if (state.repeat) {
-              state.currentTime = 0;
-            } else {
-              nextTrack();
-              return;
+          progressInterval = setInterval(() => {
+            if (!state.isPlaying) return;
+            const activeTrack = state.tracks[state.currentIndex];
+            if (!activeTrack) return;
+            state.currentTime += 0.25;
+            if (state.currentTime >= activeTrack.duration) {
+              if (state.repeat) {
+                state.currentTime = 0;
+              } else {
+                nextTrack();
+                return;
+              }
             }
-          }
-          updateDockProgress();
-        }, 250);
+            updateDockProgress();
+          }, 250);
+        }
 
         updateMediaSession();
       }
 
-      // MediaSession API for OS-wide global hardware media keys
       function updateMediaSession() {
         if (!('mediaSession' in navigator)) return;
         const track = state.tracks[state.currentIndex];
         if (!track) return;
         try {
-          navigator.mediaSession.metadata = new MediaMetadata({
+          const meta = {
             title: track.title,
             artist: track.artist,
-            album: 'VK Музыка (Telegram Mini App)'
-          });
+            album: 'VK Музыка'
+          };
+          if (track.thumbUrl) {
+            meta.artwork = [{ src: track.thumbUrl, sizes: '300x300', type: 'image/jpeg' }];
+          }
+          navigator.mediaSession.metadata = new MediaMetadata(meta);
           navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
           navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
           navigator.mediaSession.setActionHandler('pause', () => { if (state.isPlaying) togglePlay(); });
@@ -740,16 +774,17 @@
         } catch (e) {}
       }
 
-      // Core Player Actions
+      // Player Controls
       function selectTrack(index, autoPlay) {
         if (index < 0 || index >= state.tracks.length) return;
         state.currentIndex = index;
         state.currentTime = 0;
+        activeTrackIdLoaded = null;
         if (autoPlay) {
           state.isPlaying = true;
           startAudioEngine();
         } else {
-          stopAudioEngine();
+          stopAudioEngine(true);
         }
         renderAll();
       }
@@ -760,7 +795,7 @@
         if (state.isPlaying) {
           startAudioEngine();
         } else {
-          stopAudioEngine();
+          stopAudioEngine(false);
           updateMediaSession();
         }
         renderAll();
@@ -784,6 +819,9 @@
         if (!state.tracks.length) return;
         if (state.currentTime > 4) {
           state.currentTime = 0;
+          if (htmlAudio && activeTrackIdLoaded) {
+            try { htmlAudio.currentTime = 0; } catch (e) {}
+          }
           updateDockProgress();
           return;
         }
@@ -833,17 +871,17 @@
         const item = state.tracks.find(t => t.id === targetId);
         if (item) {
           item.liked = !item.liked;
-          saveStorage('vk_tracks', state.tracks);
-          showToast(item.liked ? 'Добавлено в Избранное ВК ♥' : 'Удалено из Избранного');
+          if (!state.isDemo) {
+            saveStorage('vk_real_tracks', state.tracks);
+          }
+          showToast(item.liked ? 'Отмечено в Избранном ♥' : 'Убрано из Избранного');
           renderAll();
         }
       }
 
-      // Render Functions
       function getFilteredTracks() {
         return state.tracks.filter(t => {
           if (state.filter === 'liked' && !t.liked) return false;
-          if (state.filter === 'cached' && !t.cached) return false;
           if (state.searchQuery.trim()) {
             const q = state.searchQuery.toLowerCase();
             return t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q);
@@ -868,8 +906,8 @@
         if (filtered.length === 0) {
           trackListContainer.innerHTML = `
             <div class="bg-vk-card border border-vk-border rounded-2xl p-8 text-center space-y-2">
-              <p class="text-sm font-semibold text-slate-300">Треки не найдены</p>
-              <p class="text-xs text-vk-muted">Попробуйте изменить поисковый запрос или переключить фильтр</p>
+              <p class="text-sm font-semibold text-slate-300">Песни не найдены</p>
+              <p class="text-xs text-vk-muted">Нажмите кнопку «Найти в ВК» справа от строки поиска, чтобы искать по всей базе ВКонтакте</p>
             </div>
           `;
           return;
@@ -879,6 +917,7 @@
         trackListContainer.innerHTML = filtered.map(track => {
           const realIdx = state.tracks.findIndex(t => t.id === track.id);
           const isCurrent = currentTrack && currentTrack.id === track.id;
+          const coverStyle = track.thumbUrl ? `background-image: url('${track.thumbUrl}'); background-size: cover; background-position: center;` : '';
           return `
             <div data-track-idx="${realIdx}" class="track-row group flex items-center justify-between gap-3 p-2.5 rounded-2xl border transition cursor-pointer ${
               isCurrent
@@ -886,17 +925,19 @@
                 : 'bg-vk-card/70 hover:bg-vk-card border-vk-border'
             }">
               <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="w-11 h-11 rounded-xl bg-gradient-to-br ${track.coverGradient} flex items-center justify-center text-white font-bold text-xs shrink-0 relative overflow-hidden">
-                  ${
-                    isCurrent && state.isPlaying
-                      ? '<div class="flex items-end gap-0.5 h-4"><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span></div>'
-                      : '<span>▶</span>'
-                  }
+                <div style="${coverStyle}" class="w-11 h-11 rounded-xl bg-gradient-to-br ${track.coverGradient || 'from-vk-blue to-indigo-800'} flex items-center justify-center text-white font-bold text-xs shrink-0 relative overflow-hidden">
+                  <div class="w-full h-full flex items-center justify-center ${track.thumbUrl ? 'bg-black/35' : ''}">
+                    ${
+                      isCurrent && state.isPlaying
+                        ? '<div class="flex items-end gap-0.5 h-4"><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span></div>'
+                        : '<span>▶</span>'
+                    }
+                  </div>
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2">
                     <p class="text-sm font-semibold truncate ${isCurrent ? 'text-vk-blue' : 'text-white'}">${track.title}</p>
-                    ${track.cached ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-medium shrink-0" title="Мгновенный запуск из кэша">⚡ HQ</span>' : ''}
+                    ${track.streamUrl ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-vk-blue/20 text-vk-blue font-medium shrink-0">VK MP3</span>' : ''}
                   </div>
                   <p class="text-xs text-vk-muted truncate">${track.artist}</p>
                 </div>
@@ -914,7 +955,6 @@
           `;
         }).join('');
 
-        // Attach event listeners to rendered rows
         trackListContainer.querySelectorAll('.track-row').forEach(row => {
           row.addEventListener('click', (e) => {
             if (e.target.closest('.like-btn')) return;
@@ -967,31 +1007,39 @@
       }
 
       function renderAll() {
-        // Views visibility
         loginView.classList.toggle('hidden', state.loggedIn);
         playerView.classList.toggle('hidden', !state.loggedIn);
-        accountBtnLabel.textContent = state.loggedIn ? 'Аккаунт ВК' : 'Войти';
+        accountBtnLabel.textContent = state.loggedIn ? 'Выйти' : 'Войти';
         userStatusSub.textContent = state.loggedIn
-          ? 'Авторизован: ' + state.userName
-          : 'Требуется вход в аккаунт ВКонтакте';
+          ? (state.isDemo ? 'Демо-режим: ' : 'Аккаунт ВК: ') + state.userName
+          : 'Войдите по номеру, почте или токену ВК';
 
-        userNameDisplay.textContent = state.userName;
-        const initials = state.userName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'VK';
-        userAvatar.textContent = initials;
+        connBadge.textContent = state.isDemo ? 'Демо' : 'VK Audio';
+        accountModePill.textContent = state.isDemo ? 'Демо' : 'Личный ВК';
 
-        // Filter buttons state
+        userNameDisplay.textContent = state.userName || 'Пользователь ВК';
+        if (state.userPhoto) {
+          userAvatar.innerHTML = `<img src="${state.userPhoto}" alt="" class="w-full h-full object-cover" />`;
+        } else {
+          const initials = (state.userName || 'ВК').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'ВК';
+          userAvatar.textContent = initials;
+        }
+
         const activeFilterClass = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-vk-blue text-white transition';
         const inactiveFilterClass = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-vk-card text-vk-muted hover:text-white border border-vk-border transition';
         filterAll.className = state.filter === 'all' ? activeFilterClass : inactiveFilterClass;
         filterLiked.className = state.filter === 'liked' ? activeFilterClass : inactiveFilterClass;
-        filterCached.className = state.filter === 'cached' ? activeFilterClass : inactiveFilterClass;
 
-        // Dock state
         const currentTrack = state.tracks[state.currentIndex];
         if (currentTrack) {
           dockTitle.textContent = currentTrack.title;
           dockArtist.textContent = currentTrack.artist;
-          dockCover.className = `w-11 h-11 rounded-xl bg-gradient-to-br ${currentTrack.coverGradient} flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-md`;
+          if (currentTrack.thumbUrl) {
+            dockCover.innerHTML = `<img src="${currentTrack.thumbUrl}" alt="" class="w-full h-full object-cover" />`;
+          } else {
+            dockCover.innerHTML = 'VK';
+            dockCover.className = `w-11 h-11 rounded-xl bg-gradient-to-br ${currentTrack.coverGradient || 'from-vk-blue to-indigo-600'} flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-md overflow-hidden`;
+          }
           btnDockLike.className = `transition text-sm shrink-0 ${currentTrack.liked ? 'text-rose-400' : 'text-vk-muted hover:text-rose-400'}`;
         }
 
@@ -1007,29 +1055,46 @@
         renderHotkeysModal();
       }
 
-      // Event Listeners: Login Form & Auth Tabs
+      // Switch login tabs
       tabLoginPass.addEventListener('click', () => {
         state.authMode = 'pass';
-        tabLoginPass.className = 'py-1.5 text-xs font-semibold rounded-lg bg-vk-blue text-white transition';
-        tabLoginToken.className = 'py-1.5 text-xs font-semibold rounded-lg text-vk-muted hover:text-white transition';
+        showLoginError('');
+        tabLoginPass.className = 'py-2 text-xs font-semibold rounded-lg bg-vk-blue text-white transition';
+        tabLoginToken.className = 'py-2 text-xs font-semibold rounded-lg text-vk-muted hover:text-white transition';
         credentialsBlock.classList.remove('hidden');
         tokenBlock.classList.add('hidden');
       });
 
       tabLoginToken.addEventListener('click', () => {
         state.authMode = 'token';
-        tabLoginToken.className = 'py-1.5 text-xs font-semibold rounded-lg bg-vk-blue text-white transition';
-        tabLoginPass.className = 'py-1.5 text-xs font-semibold rounded-lg text-vk-muted hover:text-white transition';
+        showLoginError('');
+        tabLoginToken.className = 'py-2 text-xs font-semibold rounded-lg bg-vk-blue text-white transition';
+        tabLoginPass.className = 'py-2 text-xs font-semibold rounded-lg text-vk-muted hover:text-white transition';
         tokenBlock.classList.remove('hidden');
         credentialsBlock.classList.add('hidden');
       });
 
+      // Submit Login (Phone/Email + Password OR Token)
       vkLoginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const rawLogin = vkLoginInput.value.trim();
-        const rawToken = vkTokenInput.value.trim();
+        showLoginError('');
 
-        // Try backend API if hosted with bot_and_server.py, fallback to instant client auth
+        const rawLogin = vkLoginInput.value.trim();
+        const rawPass = vkPassInput.value;
+        const cleanToken = extractVkToken(vkTokenInput.value);
+
+        if (state.authMode === 'pass' && (!rawLogin || !rawPass)) {
+          showLoginError('Введите ваш номер телефона (или почту) и пароль от ВКонтакте.');
+          return;
+        }
+        if (state.authMode === 'token' && !cleanToken) {
+          showLoginError('Вставьте токен или скопированную ссылку с access_token.');
+          return;
+        }
+
+        btnSubmitLogin.disabled = true;
+        btnSubmitText.textContent = 'Подключение к ВКонтакте...';
+
         try {
           const resp = await fetch(window.location.origin + '/api/vk/login', {
             method: 'POST',
@@ -1037,51 +1102,158 @@
             body: JSON.stringify({
               mode: state.authMode,
               login: rawLogin,
-              password: document.getElementById('vkPassInput').value,
-              two_fa: document.getElementById('vk2faInput').value,
-              token: rawToken
+              password: rawPass,
+              two_fa: vk2faInput.value.trim(),
+              captcha_sid: state.captchaSid,
+              captcha_key: vkCaptchaInput.value.trim(),
+              token: cleanToken
             })
           });
-          if (resp.ok) {
-            const data = await resp.json();
-            if (data.tracks && data.tracks.length) {
-              state.tracks = data.tracks;
-            }
-            if (data.user_name) {
-              state.userName = data.user_name;
-            }
+
+          const data = await resp.json();
+
+          // Check if VK requested 2FA code (SMS or App code)
+          if (data.status === '2fa_required') {
+            twoFaWrapper.classList.remove('hidden');
+            state.validationSid = data.validation_sid || '';
+            twoFaHint.textContent = data.message || 'ВКонтакте запросил код двухфакторной аутентификации (из приложения ВК или SMS). Введите код и нажмите «Войти».';
+            vk2faInput.focus();
+            btnSubmitLogin.disabled = false;
+            btnSubmitText.textContent = 'Подтвердить код и войти';
+            return;
           }
+
+          // Check if VK requested Captcha
+          if (data.status === 'captcha_required') {
+            captchaWrapper.classList.remove('hidden');
+            state.captchaSid = data.captcha_sid || '';
+            captchaImg.src = data.captcha_img || '';
+            vkCaptchaInput.value = '';
+            vkCaptchaInput.focus();
+            showLoginError('ВКонтакте попросил ввести код с картинки.');
+            btnSubmitLogin.disabled = false;
+            btnSubmitText.textContent = 'Отправить капчу и войти';
+            return;
+          }
+
+          if (!resp.ok || data.error) {
+            showLoginError(data.detail || data.error || 'Не удалось войти в аккаунт ВК. Проверьте данные или войдите по токену.');
+            btnSubmitLogin.disabled = false;
+            btnSubmitText.textContent = 'Войти и загрузить мои песни ВК';
+            return;
+          }
+
+          // Success! Real VK tracks loaded
+          state.isDemo = false;
+          state.loggedIn = true;
+          state.vkToken = data.access_token || cleanToken;
+          state.userName = data.user_name || 'Пользователь ВК';
+          state.userPhoto = data.user_photo || '';
+          state.tracks = Array.isArray(data.tracks) ? data.tracks : [];
+          state.currentIndex = 0;
+          state.currentTime = 0;
+          state.captchaSid = '';
+          twoFaWrapper.classList.add('hidden');
+          captchaWrapper.classList.add('hidden');
+
+          saveStorage('vk_real_token', state.vkToken);
+          saveStorage('vk_real_user_name', state.userName);
+          saveStorage('vk_real_user_photo', state.userPhoto);
+          saveStorage('vk_real_tracks', state.tracks);
+
+          showToast(`Загружено ваших песен из ВК: ${state.tracks.length}`);
+          renderAll();
         } catch (err) {
-          // Running in standalone Canvas preview mode
-          if (state.authMode === 'pass' && rawLogin) {
-            state.userName = rawLogin.includes('@') ? rawLogin.split('@')[0] : 'Алексей Ковалёв (' + rawLogin + ')';
-          } else if (state.authMode === 'token' && rawToken) {
-            state.userName = 'VK Token User';
-          }
+          showLoginError('Сервер бота недоступен в режиме предпросмотра Canvas. Откройте плеер через кнопку в вашем Telegram-боте (или нажмите «Тестовый демо-режим» ниже).');
+        } finally {
+          btnSubmitLogin.disabled = false;
+          btnSubmitText.textContent = 'Войти и загрузить мои песни ВК';
         }
-
-        state.loggedIn = true;
-        saveStorage('vk_logged_in', true);
-        saveStorage('vk_user_name', state.userName);
-        showToast('Вход выполнен! Музыка ВКонтакте загружена');
-        renderAll();
       });
 
+      // Reload user's own tracks from VK
+      btnReloadMyTracks.addEventListener('click', async () => {
+        if (state.isDemo || !state.vkToken) {
+          showToast('Войдите в свой аккаунт ВК для обновления списка');
+          return;
+        }
+        showToast('Обновляем ваши аудиозаписи из ВК...');
+        try {
+          const resp = await fetch(window.location.origin + '/api/vk/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'token', token: state.vkToken })
+          });
+          const data = await resp.json();
+          if (resp.ok && Array.isArray(data.tracks)) {
+            state.tracks = data.tracks;
+            saveStorage('vk_real_tracks', state.tracks);
+            searchInput.value = '';
+            state.searchQuery = '';
+            showToast(`Список обновлён (${state.tracks.length} треков)`);
+            renderAll();
+          }
+        } catch (e) {
+          showToast('Ошибка соединения с сервером');
+        }
+      });
+
+      // Search across all of VK Music (audio.search)
+      btnSearchVkGlobal.addEventListener('click', async () => {
+        const q = searchInput.value.trim();
+        if (!q) {
+          showToast('Введите название песни или исполнителя в поле поиска');
+          searchInput.focus();
+          return;
+        }
+        if (state.isDemo || !state.vkToken) {
+          showToast('Глобальный поиск по ВК доступен после входа в аккаунт');
+          return;
+        }
+        showToast('Ищем в базе ВКонтакте: ' + q + '...');
+        try {
+          const resp = await fetch(window.location.origin + '/api/vk/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: state.vkToken, query: q })
+          });
+          const data = await resp.json();
+          if (resp.ok && Array.isArray(data.tracks)) {
+            state.tracks = data.tracks;
+            state.searchQuery = '';
+            showToast(`Найдено в ВК: ${data.tracks.length} треков`);
+            renderAll();
+          } else {
+            showToast(data.detail || 'Ничего не найдено');
+          }
+        } catch (e) {
+          showToast('Ошибка поиска ВК');
+        }
+      });
+
+      // Demo Mode button (explicit only)
       btnQuickDemo.addEventListener('click', () => {
-        state.userName = 'Алексей Ковалёв';
+        state.isDemo = true;
         state.loggedIn = true;
-        saveStorage('vk_logged_in', true);
-        saveStorage('vk_user_name', state.userName);
-        showToast('Демо-аккаунт ВКонтакте подключён');
+        state.userName = 'Демо-профиль';
+        state.userPhoto = '';
+        state.tracks = JSON.parse(JSON.stringify(DEMO_TRACKS));
+        state.currentIndex = 0;
+        showToast('Включён тестовый демо-режим');
         renderAll();
       });
 
+      // Logout / Switch Account
       btnAccountToggle.addEventListener('click', () => {
         if (state.loggedIn) {
-          state.loggedIn = false;
           if (state.isPlaying) togglePlay();
-          saveStorage('vk_logged_in', false);
-          showToast('Вы вышли из аккаунта ВК');
+          stopAudioEngine(true);
+          state.loggedIn = false;
+          state.isDemo = false;
+          state.vkToken = '';
+          saveStorage('vk_real_token', '');
+          saveStorage('vk_real_tracks', []);
+          showToast('Вы вышли из аккаунта. Войдите снова.');
           renderAll();
         } else {
           vkLoginInput.focus();
@@ -1095,6 +1267,13 @@
         renderTrackList();
       });
 
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnSearchVkGlobal.click();
+        }
+      });
+
       btnClearSearch.addEventListener('click', () => {
         searchInput.value = '';
         state.searchQuery = '';
@@ -1104,9 +1283,8 @@
 
       filterAll.addEventListener('click', () => { state.filter = 'all'; renderAll(); });
       filterLiked.addEventListener('click', () => { state.filter = 'liked'; renderAll(); });
-      filterCached.addEventListener('click', () => { state.filter = 'cached'; renderAll(); });
 
-      // Player Controls
+      // Playback Buttons
       btnPlayPause.addEventListener('click', togglePlay);
       btnNext.addEventListener('click', nextTrack);
       btnPrev.addEventListener('click', prevTrack);
@@ -1127,7 +1305,7 @@
       seekSlider.addEventListener('input', () => {
         const track = state.tracks[state.currentIndex];
         if (!track) return;
-        state.currentTime = ( parseFloat(seekSlider.value) / 100 ) * track.duration;
+        state.currentTime = (parseFloat(seekSlider.value) / 100) * track.duration;
         if (track.streamUrl && htmlAudio) {
           try { htmlAudio.currentTime = state.currentTime; } catch (e) {}
         }
@@ -1157,7 +1335,6 @@
       btnCloseHotkeys.addEventListener('click', closeHotkeys);
       btnSaveHotkeys.addEventListener('click', () => {
         saveStorage('vk_hotkeys', state.hotkeys);
-        // Also sync with backend if connected
         fetch(window.location.origin + '/api/hotkeys', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1175,7 +1352,6 @@
         showToast('Горячие клавиши сброшены по умолчанию');
       });
 
-      // Format KeyboardEvent into readable combo string
       function formatKeyEvent(e) {
         const parts = [];
         if (e.ctrlKey || e.metaKey) parts.push('Ctrl');
@@ -1202,9 +1378,7 @@
         }
       }
 
-      // Global Keyboard Listener (for recording and executing hotkeys)
       window.addEventListener('keydown', (e) => {
-        // 1. If recording a new hotkey in the modal
         if (state.recordingAction) {
           e.preventDefault();
           e.stopPropagation();
@@ -1223,11 +1397,9 @@
           return;
         }
 
-        // Ignore shortcuts when typing in text inputs
         const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if (tag === 'input' || tag === 'textarea') return;
 
-        // 2. Match pressed combo against configured hotkeys
         const pressedCombo = formatKeyEvent(e);
         for (const [actionKey, cfg] of Object.entries(state.hotkeys)) {
           if (cfg.combo === pressedCombo) {
@@ -1238,7 +1410,6 @@
         }
       });
 
-      // Connect to optional local WebSocket hub for OS-wide background hotkeys (desktop_hotkeys.py)
       function connectDesktopHotkeysWs() {
         if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
         try {
@@ -1255,7 +1426,6 @@
         } catch (e) {}
       }
 
-      // Initial render
       applyVolume();
       renderAll();
       connectDesktopHotkeysWs();
